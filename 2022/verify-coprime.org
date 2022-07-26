@@ -1,0 +1,122 @@
+* Efficiently verifying in EVM that two numbers are co-prime
+
+Two non-zero numbers $a$ and $b$ are called co-prime if there is no
+number $p$ other than $1$ that divides both $a$ and $b$. In other
+words, their greatest common divisor is 1. For example, $9$ and $25$
+are co-prime.
+
+As an example of how this is relevant in EVM, [[https://github.com/ProjectOpenSea/seaport/tree/1.1][Seaport 1.1]] has the
+notion of 'partial fills', where one can place an order for
+exchanging, say, 12 ERC1155 tokens for 36 wei while allowing it to
+be partially filled--this can be filled, as long as you can divide
+both sides perfectly, i.e., for example by supplying 3 wei, 12 wei,
+18 wei, etc to receive 1 token, 3 tokens and 6 tokens respectively.
+
+Seaport's partial fill mechanism requires implementing a rudimentary
+rational arithmetic in EVM. A filler can fill certain orders
+partially, where the fraction will be provided as an input (two
+=uint120= numbers). The ideal representation of such a fraction
+$\frac{a}{b}$ is when $a$ and $b$ are co-prime. Seaport uses an
+on-chain GCD to implement this, but only computes it when necessary
+in order to save gas. Realistically, most partial orders would never
+reach the GCD computation.
+
+We talk about some techniques to verify this:
+
+** Computing GCD on chain
+The GCD can be computed using euclidean division algorithm. A
+[[https://github.com/ethereum/solidity/blob/a90bafd44d8dc81195ab180d55b1c5b317a6a310/test/libyul/yulOptimizerTests/fullSuite/stack_compressor_msize.yul#L4][recursive algorithm]] involves computing =mod= repeatedly. One can
+implement a straightforward iterative solution for this as well,
+which is what's implemented in Seaport 1.1.
+
+It's interesting to understand what numbers can lead to the maximum
+number iterations for the Euclidean GCD algorithm. It's surprising
+that the smallest numbers for which the GCD takes $n$ steps are for two
+consecutive Fibonacci numbers. The worst case for two =uint120=
+numbers are the two largest Fibonacci numbers below =type(uint120).max=,
+i.e., $638817435613190341905763972389505493$ and
+$1033628323428189498226463595560281832$. The computation should take
+around 174 steps for these.
+
+But can we do better?
+
+** Providing the Bézout coefficients as witnesses
+The numbers $a$ and $b$ are co-prime if and only if there exists $x, y \in \mathbb{Z}$
+satisfying $a\cdot x + b \cdot y = 1$. See [[https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity][this]] on
+how the coefficients can be calculated by the extended Euclidean
+division algorithm.
+
+The idea here is for the user to compute Bézout coefficients as
+witnesses off-chain and provide these witnesses into the =calldata= to
+perform a cheap verification on-chain.
+
+Here's an implementation of it in solidity.
+
+#+begin_src solidity
+  function verify_coprimality(uint120 a, uint120 b, int x, int y) pure {
+      require(int(uint256(a)) * x + int(uint256(b)) * y == 1);
+  }
+#+end_src
+
+We still need to ensure that there is a witness that satisfies the following:
+
+1. $a \cdot x$ and $b \cdot x$ does not overflow (in 256 bit signed
+   integer arithmetic).
+2. $a \cdot x + b \cdot x$ does not overflow (in 256 bit signed
+   integer arithmetic).
+
+Given a Bezout pair $(x, y)$ for the coprimality case, all other
+pairs satisfy $(x + k \cdot b,\ y + k \cdot a)$ for $k \in \mathbb{Z}$.
+This means that there exists at least a solution
+satisfying $\vert x \vert < b$ and $\vert y \vert < a$. Since $a, b < \tt{type(uint120).max}$,
+this proves that $a \cdot x$ and $b \cdot x$ does not overflow in 256 bit signed integer arithmetic.
+
+The second requirement follows as $a \cdot b$ is at most $242$ bits
+in signed integers and therefore, the addition cannot overflow in
+$256$ bit signed integer arithmetic.
+
+A fun open question is whether the above computation can be made
+unchecked? We already mentioned that there is always a witness that
+avoids the overflow. However, is it possible to produce a fake
+witnesses if the arithmetic operations wrap, i.e., all arithmetic is done in
+modulo 2^{256} arithmetic?
+
+For the general case, i.e., if the numbers $a$ and $b$ are
+unsigned $256$ bit integers, it's not necessary that the above two
+conditions are true, i.e., it's not necessary that we can always
+produce a witness that avoids the intermediate overflows. Can we do
+better?
+
+** Providing the inverse as a witness
+
+Two numbers $a$ and $b$ are co-prime if and only if there exists a
+number $x$ such that $x \cdot a \equiv 1 \pmod b$, or equivalently
+$y$ such that $y \cdot b \equiv 1 \pmod a$.
+
+Note: Bézout coefficients from the last section, can be used as the
+numbers $x$ and $y$. What makes this more interesting is the opcode
+=mulmod= in EVM! Note: there is a unique solution for $x$ and $y$
+satisfying $0 \le x < b$ and $0 \le y < a$ respectively.
+
+Similar to the above, the idea here is for the user to compute the
+inverse off-chain, by the extended euclidean algorithm or some
+clever exponentiation tricks.
+
+#+begin_src solidity
+  function verify_coprimality(uint120 a, uint120 b, uint120 a_inverse) pure {
+      require(mulmod(a, a_inverse, b) == 1);
+  }
+#+end_src
+
+*Gas*: very cheap! =mulmod= is =8= gas.
+
+Note: this works even when =uint120= is replaced by =uint=, which
+solves some of the issues mentioned before.
+
+Here's a generic implementation:
+
+#+begin_src solidity
+  function verify_coprimality(uint a, uint b, uint a_inverse) pure {
+      require(mulmod(a, a_inverse, b) == 1);
+  }
+#+end_src

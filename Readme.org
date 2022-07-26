@@ -1,0 +1,2 @@
+
+- [[./2022/verify-coprime.org][Efficiently verifying in EVM that two numbers are coprime]].
