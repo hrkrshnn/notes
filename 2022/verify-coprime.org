@@ -66,7 +66,7 @@ We still need to ensure that there is a witness that satisfies the following:
    integer arithmetic).
 
 Given a Bezout pair $(x, y)$ for the coprimality case, all other
-pairs satisfy $(x + k \cdot b,\ y + k \cdot a)$ for $k \in \mathbb{Z}$.
+pairs satisfy $(x + k \cdot b,\ y - k \cdot a)$ for $k \in \mathbb{Z}$.
 This means that there exists at least a solution
 satisfying $\vert x \vert < b$ and $\vert y \vert < a$. Since $a, b < \tt{type(uint120).max}$,
 this proves that $a \cdot x$ and $b \cdot x$ does not overflow in 256 bit signed integer arithmetic.
