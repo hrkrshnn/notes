@@ -2,8 +2,8 @@
 
 **This is an unfinished draft**
 
-The EVM has the stack operations $\operatoraname{swap}_i$, $\operatorname{dup}_i$ and
-$\operatoraname{pop}$ that swaps, duplicates and removes the top of the stack respectively. It's
+The EVM has the stack operations $\text{swap}_i$, $\text{dup}_i$ and
+$\text{pop}$ that swaps, duplicates and removes the top of the stack respectively. It's
 often important to transform a certain stack layout to a shuffled layout, for example, because
 operations require forming
 
@@ -11,7 +11,7 @@ Given a stack arrangement $a_{1}, \cdots, a_{17}$ what's the optimal way to tran
 $b_{1}, \cdots, b_{17}$ where $b_i$ is a rearrangement of $a_i$ for $i \in {1, \cdots, 17}$.
 
 If we assume that all values $a_1, \cdots, a_{17}$ are distinct and that we only want to perform
-$\operatorname{swap}$ operations, there is a beautiful connection with [permutation
+$\text{swap}$ operations, there is a beautiful connection with [permutation
 groups](https://en.wikipedia.org/wiki/Permutation_group), the problem can be converted into a known
 group theory question.
 
@@ -33,8 +33,8 @@ that any permutation can be decomposed as a product of disjoint cycles. This is 
 
 ## EVM context
 
-In the EVM context, $\operatorname{swap}_i$ is the 2-cycle $(1\ (i + 1))$, e.g.,
-$\operatorname{swap}_1$ is $(1\ 2)$ and $\operatorname{swap}_{16}$ is $(1\ 17)$. It's straightforward to see that
+In the EVM context, $\text{swap}_i$ is the 2-cycle $(1\ (i + 1))$, e.g.,
+$\text{swap}_1$ is $(1\ 2)$ and $\text{swap}_{16}$ is $(1\ 17)$. It's straightforward to see that
 the permutations $(1\ 2), \cdots (1\ 17)$ can generate the group $S_{17}$.
 
 Our optimality question can be translated as the following: given a permutation in $S_{17}$, what is
@@ -47,8 +47,8 @@ Note that $(a_1\ a_2\ \cdots\ a_k) = (a_1\ a_k) (a_1\ a_{k - 1}) \cdots (a_1\ a_
 
 Also notice that $(i\ j) = (1\ j)(1\ i)(1\ j) = (1\ i)(1\ j)(1\ i)$. In other words, two swapping
 the $i$-th and $j$-th element in the stack is the same as
-$\operatorname{swap}_i \cdot \operatorname{swap}_j \cdot \operatorname{swap}_i$, which is identical to
-$\operatorname{swap}_j \cdot \operatorname{swap}_i \cdot \operatorname{swap}_j$.
+$\text{swap}_i \cdot \text{swap}_j \cdot \text{swap}_i$, which is identical to
+$\text{swap}_j \cdot \text{swap}_i \cdot \text{swap}_j$.
 
 Now we have all the steps needed to answer the original question: given a $k$-cycle,
 $(a_1\ a_2\ \cdots a_k)$, this can be decomposed into
@@ -57,16 +57,16 @@ $(1\ a_1)\cdot (1\ a_k)\cdot (1\ a_1) \cdot (1\ a_1) \cdot (1\ a_{k-1}) \cdot (1
 
 $$(1\ a_1)\cdot (1\ a_k) \cdot (1\ a_{k-1}) \cdots (1\ a_{1}) (1\ a_1)$$
 
-That is, any $k$ cycle can be decomposed into at most $k + 2$ number of $\operatorname{swap}_i$
+That is, any $k$ cycle can be decomposed into at most $k + 2$ number of $\text{swap}_i$
 operations. But is this the optimal decomposition?
 
 
 
 ## Open questions
-1. How does introducing the sequence $\operatorname{dup}_i$ followed by $\operatorname{swap}_i$-s
-   and a $\operatorname{pop}$ change the optimality of the shuffling?
+1. How does introducing the sequence $\text{dup}_i$ followed by $\text{swap}_i$-s
+   and a $\text{pop}$ change the optimality of the shuffling?
 2. If the elements $a_i$ are not distinct, what's the optimal shuffling that only uses swaps? What
-   if we can introduce $\operatorname{dup}$ and $\operatorname{pop}$?
+   if we can introduce $\text{dup}$ and $\text{pop}$?
 3. How can we deal with the general case where variables can be repeated, generated on the fly and
    any EVM stack operation can be used? Can you improve the current heuristics in Solidity's stack
    shuffling algorithms? See [Daniel's talk](https://www.youtube.com/watch?v=RJQdycaEgIE0) and
