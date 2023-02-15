@@ -1,5 +1,12 @@
 # Optimal way to shuffle a stack in EVM
 
+**This is an unfinished draft**
+
+The EVM has the stack operations $\operatoraname{swap}_i$, $\operatorname{dup}_i$ and
+$\operatoraname{pop}$ that swaps, duplicates and removes the top of the stack respectively. It's
+often important to transform a certain stack layout to a shuffled layout, for example, because
+operations require forming
+
 Given a stack arrangement $a_{1}, \cdots, a_{17}$ what's the optimal way to transform it into
 $b_{1}, \cdots, b_{17}$ where $b_i$ is a rearrangement of $a_i$ for $i \in {1, \cdots, 17}$.
 
@@ -45,13 +52,13 @@ $\operatorname{swap}_j \cdot \operatorname{swap}_i \cdot \operatorname{swap}_j$.
 
 Now we have all the steps needed to answer the original question: given a $k$-cycle,
 $(a_1\ a_2\ \cdots a_k)$, this can be decomposed into
-$(a_1\ a_k)\cdot (a_1\ a_{k-1}) \cdot (a_1 a_2)$, which can further be divided into 
-$(1\ a_1)\cdot (1\ a_k)\cdot (1 \ a_1) \cdot (1 a_1) \cdot (1\ a_{k-1}) \cdot (1\ a_1) \cdots \cdot (1\ a_1) (1\ a_2) (1\ a_1)$
+$(a_1\ a_k)\cdot (a_1\ a_{k-1}) \cdot (a_1\ a_2)$, which can further be divided into 
+$(1\ a_1)\cdot (1\ a_k)\cdot (1\ a_1) \cdot (1\ a_1) \cdot (1\ a_{k-1}) \cdot (1\ a_1) \cdots \cdot (1\ a_1) (1\ a_2) (1\ a_1)$
 
-$$(1\ a_1)\cdot (1\ a_k) \cdot (1\ a_{k-1}) \cdots (1\ a_{k}) (1\ a_1)$$
+$$(1\ a_1)\cdot (1\ a_k) \cdot (1\ a_{k-1}) \cdots (1\ a_{1}) (1\ a_1)$$
 
 That is, any $k$ cycle can be decomposed into at most $k + 2$ number of $\operatorname{swap}_i$
-operation. But is this the optimal decomposition?
+operations. But is this the optimal decomposition?
 
 
 
