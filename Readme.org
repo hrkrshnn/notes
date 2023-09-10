@@ -1,2 +1,3 @@
 
-- [[./2022/verify-coprime.org][Efficiently verifying in EVM that two numbers are coprime]].
+- [[./2022/verify-coprime.org][Efficiently verifying in EVM that two numbers are coprime]]
+- [[./2023/curta.md][Curta 17]]
