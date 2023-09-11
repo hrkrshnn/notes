@@ -68,7 +68,7 @@ interface IMagicReturn {
 
 /// Function that enforces the magic check
 function magicCheck(IMagicReturn magicReturn) {
-    require(magicReturn.foo() == IMagicReturn.selector);
+    require(magicReturn.foo() == IMagicReturn.foo.selector);
 }
 ```
 
@@ -89,7 +89,7 @@ interface MagicReturnWithExtraData {
 
 /// Function that enforces the magic check
 function magicCheck(IMagicReturn magicReturn) {
-    require(magicReturn.foo(type(uint).max) == IMagicReturn.selector);
+    require(magicReturn.foo(type(uint).max) == IMagicReturn.foo.selector);
 }
 ```
 
