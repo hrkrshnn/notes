@@ -18,8 +18,7 @@ some quirks that we'll explore soon.
 
 Long time ago, one of the most requested feature in solidity was to skip the `extcodesize` check
 that solidity performs for every high-level call. Such a check is important, because EVM assumes
-that calls to empty addresses are successful by default. Whether or not this is a quirk or not is
-upto debate, but that is another conversation.
+that calls to empty addresses are successful by default. Whether or not this is a quirk is upto debate, but that is another conversation.
 
 This long requested feature in Solidity was meant to save gas (800 gas back then, before EIP-2929),
 as in many cases the contract addresses were known in advance to have code. There were varying
@@ -136,7 +135,7 @@ The ABI encoder v1 was also another hidden clue that indicated that there is som
 the return data decoding, indicating that the addresses you are supposed to deploy need not
 necessarily be a regular address, hinting at precompiles being involved here.
 
-The puzzle also required multiple things to work at the same time.
+To summarize, the puzzle required multiple things to work at the same time.
 
 1. `pragma abi coder v1`.
 2. At least a Solidity version `0.8.10`.
